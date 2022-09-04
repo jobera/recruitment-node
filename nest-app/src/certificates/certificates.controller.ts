@@ -9,7 +9,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { CarbonCertificateEntity } from '../entities/carbon-certificate.entity';
-import { CertificateService } from './certificates.service';
+import { CertificatesService } from './certificates.service';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { CertificateStatusEnum } from './certificate.status.enum';
 import { OptionalJwtAuthGuard } from '../auth/optional-auth.guard';
@@ -17,7 +17,9 @@ import { CertificatesFilterDto } from './dto/certificates.filter.dto';
 
 @Controller('api/v1/certificates')
 export class CertificateController {
-  constructor(private readonly certificateService: CertificateService) {}
+  constructor(
+    private readonly certificatesService: CertificatesService,
+  ) {}
 
   @UseGuards(OptionalJwtAuthGuard)
   @Get()
@@ -25,17 +27,16 @@ export class CertificateController {
     @Request() { user },
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 10,
-    @Query(new ValidationPipe({ transform: true }))
+    @Query(new ValidationPipe({ transform: true, whitelist: true }))
     { status = [CertificateStatusEnum.available] }: CertificatesFilterDto,
   ): Promise<Pagination<CarbonCertificateEntity>> {
-    console.log(status);
     // Get carbon certificiagtes by owner when requesting by 'owned|transferred'
     const ownerId =
       !status.includes(CertificateStatusEnum.available) && user
         ? user.userId
         : null;
 
-    return this.certificateService.getAll(
+    return this.certificatesService.getAll(
       {
         page,
         limit,

@@ -8,7 +8,7 @@ import {
 } from 'nestjs-typeorm-paginate';
 import { CarbonCertificatePaginationFilter } from './module';
 
-export class CertificateService {
+export class CertificatesService {
   constructor(
     @InjectRepository(CarbonCertificateEntity)
     private readonly repository: Repository<CarbonCertificateEntity>,

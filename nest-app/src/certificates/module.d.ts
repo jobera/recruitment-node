@@ -1,3 +1,5 @@
+import { CertificateStatusEnum } from './certificate.status.enum';
+
 export interface CertificateDto {
   id: number;
   countryId: number;
@@ -5,8 +7,6 @@ export interface CertificateDto {
   ownerId: number | null;
 }
 
-export enum CertificateStatusEnum {
-  available = 'available',
-  owned = 'owned',
-  transferred = 'transferred',
+export interface CarbonCertificatePaginationFilter {
+  status: CertificateStatusEnum;
 }

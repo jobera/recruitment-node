@@ -6,19 +6,21 @@ import {
   Pagination,
   IPaginationOptions,
 } from 'nestjs-typeorm-paginate';
+import { CarbonCertificatePaginationFilter } from './module';
 
 export class CertificateService {
   constructor(
     @InjectRepository(CarbonCertificateEntity)
-    private readonly carbonCertificateRepository: Repository<CarbonCertificateEntity>,
+    private readonly repository: Repository<CarbonCertificateEntity>,
   ) {}
 
   getAll(
     options: IPaginationOptions,
+    { status }: CarbonCertificatePaginationFilter,
   ): Promise<Pagination<CarbonCertificateEntity>> {
-    return paginate<CarbonCertificateEntity>(
-      this.carbonCertificateRepository,
-      options,
-    );
+    const queryBuilder = this.repository.createQueryBuilder('c');
+    queryBuilder.where('c.status = :status', { status });
+
+    return paginate<CarbonCertificateEntity>(this.repository, options);
   }
 }

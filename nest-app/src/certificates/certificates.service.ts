@@ -1,18 +1,23 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { CarbonCertificateEntity } from '../entities/carbon-certificate.entity';
-import { Repository } from 'typeorm';
+import { Repository, UpdateResult } from 'typeorm';
 import {
   paginate,
   Pagination,
   IPaginationOptions,
 } from 'nestjs-typeorm-paginate';
 import { CarbonCertificatePaginationFilter } from './module';
+import { CertificateStatusEnum } from './certificate.status.enum';
 
 export class CertificatesService {
   constructor(
     @InjectRepository(CarbonCertificateEntity)
     private readonly repository: Repository<CarbonCertificateEntity>,
   ) {}
+
+  getOne(id: number): Promise<CarbonCertificateEntity | null> {
+    return this.repository.findOneBy({ id });
+  }
 
   getAll(
     options: IPaginationOptions,
@@ -28,5 +33,16 @@ export class CertificatesService {
     }
 
     return paginate<CarbonCertificateEntity>(queryBuilder, options);
+  }
+
+  transferCertificateOwnership(
+    id: number,
+    fromOwnerId: number,
+    toOwnerId: number,
+  ): Promise<UpdateResult> {
+    return this.repository.update(
+      { id, ownerId: fromOwnerId },
+      { status: CertificateStatusEnum.transferred, ownerId: toOwnerId },
+    );
   }
 }

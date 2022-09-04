@@ -1,21 +1,12 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { CertificatesModule } from './certificates/certificates.module';
 import { AuthModule } from './auth/auth.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { CertificatesModule } from './certificates/certificates.module';
+import { DatabaseProviderModule } from './providers/database/provider.module';
 
 @Module({
-  imports: [
-    AuthModule,
-    CertificatesModule,
-    TypeOrmModule.forRoot({
-      type: 'sqlite',
-      database: 'agreenaDB.sqlite',
-      entities: [__dirname + '/entities/*.entity{.ts,.js}'],
-      synchronize: true,
-    }),
-  ],
+  imports: [DatabaseProviderModule, AuthModule, CertificatesModule],
   controllers: [AppController],
   providers: [AppService],
 })

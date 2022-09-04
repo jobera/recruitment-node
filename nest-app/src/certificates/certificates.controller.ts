@@ -1,10 +1,13 @@
 import {
+  Body,
   Controller,
   DefaultValuePipe,
   Get,
   ParseIntPipe,
+  Put,
   Query,
   Request,
+  UnauthorizedException,
   UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
@@ -14,11 +17,15 @@ import { Pagination } from 'nestjs-typeorm-paginate';
 import { CertificateStatusEnum } from './certificate.status.enum';
 import { OptionalJwtAuthGuard } from '../auth/optional-auth.guard';
 import { CertificatesFilterDto } from './dto/certificates.filter.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CertificatesTransferDto } from './dto/certificates.transfer.dto';
+import { UsersService } from '../users/users.service';
 
 @Controller('api/v1/certificates')
 export class CertificateController {
   constructor(
     private readonly certificatesService: CertificatesService,
+    private readonly usersService: UsersService,
   ) {}
 
   @UseGuards(OptionalJwtAuthGuard)
@@ -43,5 +50,53 @@ export class CertificateController {
       },
       { status, ownerId },
     );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('/transfer/')
+  async transferCertificateOwnership(
+    @Body(new ValidationPipe({ transform: true, whitelist: true }))
+    { userId, certificateId }: CertificatesTransferDto,
+    @Request() { user },
+  ) {
+    const certificate = await this.certificatesService.getOne(certificateId);
+
+    await this.validateCertificateTransfer(certificate, user.userId, userId);
+
+    // Transfer certificate ownership
+    await this.certificatesService.transferCertificateOwnership(
+      certificateId,
+      user.userId, // Authed user - current owner
+      userId, // Requested transfer owner
+    );
+
+    return this.certificatesService.getOne(certificateId);
+  }
+
+  private async validateCertificateTransfer(
+    certificate: CarbonCertificateEntity,
+    ownerId: number,
+    newOwnerId: number,
+  ): Promise<void> {
+    // @note Check if certficate is valid and belongs to authed user
+    if (!certificate || certificate.ownerId != ownerId) {
+      throw new UnauthorizedException(
+        'Certificate unavailable for authenticated user',
+      );
+    }
+
+    // @note Check if requested user is authed user
+    if (certificate.ownerId === newOwnerId) {
+      throw new UnauthorizedException(
+        'Requested user to transfer is already owner of this certificate',
+      );
+    }
+
+    // @note Check requested user is valid
+    if (!(await this.usersService.getOne(newOwnerId))) {
+      throw new UnauthorizedException(
+        'Requested user to receive certificate ownership does not exists',
+      );
+    }
   }
 }

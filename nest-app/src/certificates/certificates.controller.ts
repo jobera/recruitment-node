@@ -13,7 +13,7 @@ import { CertificateService } from './certificates.service';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { CertificateStatusEnum } from './certificate.status.enum';
 import { OptionalJwtAuthGuard } from '../auth/optional-auth.guard';
-import { CarbonCertificatePaginationFilter } from './dto/certificates.filter.dto';
+import { CertificatesFilterDto } from './dto/certificates.filter.dto';
 
 @Controller('api/v1/certificates')
 export class CertificateController {
@@ -26,9 +26,7 @@ export class CertificateController {
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 10,
     @Query(new ValidationPipe({ transform: true }))
-    {
-      status = [CertificateStatusEnum.available],
-    }: CarbonCertificatePaginationFilter,
+    { status = [CertificateStatusEnum.available] }: CertificatesFilterDto,
   ): Promise<Pagination<CarbonCertificateEntity>> {
     console.log(status);
     // Get carbon certificiagtes by owner when requesting by 'owned|transferred'

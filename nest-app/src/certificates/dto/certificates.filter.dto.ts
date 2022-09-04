@@ -2,7 +2,7 @@ import { Transform, Type } from 'class-transformer';
 import { IsArray, IsEnum, IsOptional, IsString } from 'class-validator';
 import { CertificateStatusEnum } from '../certificate.status.enum';
 
-export class CarbonCertificatePaginationFilter {
+export class CertificatesFilterDto {
   @IsOptional()
   @IsString({ each: true })
   @IsArray()

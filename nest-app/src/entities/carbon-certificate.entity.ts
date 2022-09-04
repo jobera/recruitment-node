@@ -18,10 +18,10 @@ export class CarbonCertificateEntity {
   @Column()
   status: 'available' | 'owned' | 'transferred';
 
-  @Column()
-  ownerId: number;
+  @Column({ nullable: true })
+  ownerId: number | null;
 
-  @ManyToOne((type) => UserEntity, (user) => user.id)
+  @ManyToOne((type) => UserEntity, (user) => user.id, { nullable: true })
   @JoinColumn()
   owner: UserEntity | null;
 }

@@ -8,5 +8,6 @@ export interface CertificateDto {
 }
 
 export interface CarbonCertificatePaginationFilter {
-  status: CertificateStatusEnum;
+  status: CertificateStatusEnum | CertificateStatusEnum[];
+  ownerId?: number;
 }

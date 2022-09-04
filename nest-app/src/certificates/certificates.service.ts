@@ -16,11 +16,17 @@ export class CertificateService {
 
   getAll(
     options: IPaginationOptions,
-    { status }: CarbonCertificatePaginationFilter,
+    { status, ownerId = null }: CarbonCertificatePaginationFilter,
   ): Promise<Pagination<CarbonCertificateEntity>> {
     const queryBuilder = this.repository.createQueryBuilder('c');
-    queryBuilder.where('c.status = :status', { status });
+    queryBuilder.where('c.status IN (:...status)', { status });
 
-    return paginate<CarbonCertificateEntity>(this.repository, options);
+    if (ownerId) {
+      queryBuilder.andWhere('c.ownerId = :ownerId', { ownerId });
+    } else {
+      queryBuilder.andWhere('c.ownerId IS NULL');
+    }
+
+    return paginate<CarbonCertificateEntity>(queryBuilder, options);
   }
 }

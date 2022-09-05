@@ -14,17 +14,6 @@ export class AuthService {
     private readonly jwt: JwtService,
   ) {}
 
-  async signup(user: Partial<UserEntity>): Promise<Partial<UserEntity>> {
-    if (await this.userRepository.findOne({ where: { email: user.email } })) {
-      throw new ConflictException('User already exists');
-    }
-
-    const salt = await bcrypt.genSalt();
-    user.password = await bcrypt.hash(user.password, salt);
-    const { password, ...userDetails } = await this.userRepository.save(user);
-    return userDetails;
-  }
-
   async validateUser(
     email: string,
     password: string,
